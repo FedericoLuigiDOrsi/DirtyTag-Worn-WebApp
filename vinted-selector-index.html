@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vinted Worn Selector — DirtyTag 3.0</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom animations */
+    @keyframes scale-in {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    @keyframes slide-up {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .animate-scale-in { animation: scale-in 0.2s ease-out; }
+    .animate-slide-up { animation: slide-up 0.3s ease-out; }
+    .animate-spin { animation: spin 1s linear infinite; }
+    
+    /* Selection styling */
+    .item-card.selected { 
+      border-color: #3b82f6 !important; 
+      background-color: #eff6ff !important; 
+    }
+    .item-card.selected .checkbox-indicator { 
+      background-color: #3b82f6 !important; 
+      border-color: #3b82f6 !important; 
+    }
+    .item-card.selected .check-icon { 
+      opacity: 1 !important; 
+    }
+    
+    /* Scrollbar styling */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  
+  <!-- ========== HEADER ========== -->
+  <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl">🏷️</span>
+        <h1 class="text-xl font-bold text-gray-900">VINTED WORN SELECTOR</h1>
+        <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full font-medium">v1.0</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="showConfigModal()" class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors" title="Configurazione">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </button>
+        <button onclick="showHelpModal()" class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors" title="Aiuto">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========== MAIN CONTENT ========== -->
+  <main class="max-w-7xl mx-auto px-4 py-6">
+    
+    <!-- FILTERS SECTION -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Search -->
+        <div class="flex-1 min-w-[200px]">
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text" id="search-input" placeholder="Cerca SKU o Brand..." 
+                   class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+          </div>
+        </div>
+        
+        <!-- Category Filter -->
+        <select id="category-filter" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white">
+          <option value="">Categoria</option>
+        </select>
+        
+        <!-- Gender Filter -->
+        <select id="gender-filter" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white">
+          <option value="">Gender</option>
+        </select>
+        
+        <!-- Size Filter -->
+        <select id="size-filter" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white">
+          <option value="">Taglia</option>
+        </select>
+        
+        <!-- Reset Button -->
+        <button onclick="resetFilters()" class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Reset
+        </button>
+      </div>
+    </div>
+
+    <!-- SELECTION BAR -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <span id="selection-counter" class="text-sm font-medium text-gray-700">Selezionati: 0 / 50 max</span>
+          <div class="h-4 w-px bg-gray-300"></div>
+          <span id="visible-counter" class="text-sm text-gray-500">Visibili: 0</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="selectAll()" class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Seleziona Tutti
+          </button>
+          <button onclick="clearSelection()" class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+            Clear
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOADING STATE -->
+    <div id="loading-state" class="flex flex-col items-center justify-center h-64 gap-4">
+      <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600"></div>
+      <span class="text-gray-600 text-sm">Caricamento inventario...</span>
+    </div>
+
+    <!-- ERROR STATE -->
+    <div id="error-state" class="hidden bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg mb-6">
+      <div class="flex items-start gap-3">
+        <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+        </svg>
+        <div class="flex-1">
+          <h3 class="text-sm font-medium text-red-800">Errore di caricamento</h3>
+          <p class="mt-1 text-sm text-red-700" id="error-message">Messaggio errore qui</p>
+          <button onclick="loadItems()" class="mt-2 text-sm font-medium text-red-700 hover:text-red-600 underline">
+            Riprova
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div id="empty-state" class="hidden text-center py-16">
+      <svg class="mx-auto h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+      </svg>
+      <h3 class="mt-4 text-lg font-medium text-gray-900">Nessun item eleggibile</h3>
+      <p class="mt-2 text-sm text-gray-500 max-w-sm mx-auto">
+        Tutti gli items sono già stati processati o mancano i requisiti per le foto worn.
+      </p>
+      <button onclick="loadItems()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+        Ricarica
+      </button>
+    </div>
+
+    <!-- ITEMS GRID -->
+    <div id="items-grid" class="hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mb-6">
+      <!-- Items populated by JS -->
+    </div>
+
+    <!-- ACTIONS SECTION -->
+    <div id="actions-section" class="hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky bottom-4">
+      <div class="flex flex-wrap items-center justify-between gap-6">
+        <!-- Pose Selection -->
+        <div class="flex flex-col gap-2">
+          <label class="text-sm font-medium text-gray-700">Pose da generare:</label>
+          <div class="flex items-center gap-3">
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="pose-1" checked class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+              <span class="text-sm text-gray-600">1</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="pose-2" checked class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+              <span class="text-sm text-gray-600">2</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="pose-3" checked class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+              <span class="text-sm text-gray-600">3</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="pose-4" checked class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+              <span class="text-sm text-gray-600">4</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="pose-5" checked class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+              <span class="text-sm text-gray-600">5</span>
+            </label>
+          </div>
+        </div>
+        
+        <!-- Model Selection -->
+        <div class="flex flex-col gap-2">
+          <label class="text-sm font-medium text-gray-700">Modello:</label>
+          <select id="model-select" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white">
+            <option value="auto">Auto (basato su gender + size)</option>
+            <option value="female_s">Female Size S</option>
+            <option value="female_m">Female Size M</option>
+            <option value="male">Male</option>
+          </select>
+        </div>
+        
+        <!-- Submit Button -->
+        <button id="submit-btn" onclick="submitBatch()" disabled
+                class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2 shadow-lg">
+          <span>🚀</span>
+          <span id="submit-btn-text">GENERA FOTO WORN</span>
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="bg-white border-t border-gray-200 py-3 mt-8">
+    <div class="max-w-7xl mx-auto px-4">
+      <p id="footer-stats" class="text-sm text-gray-500 text-center">
+        Items caricati: 0 | Eleggibili: 0 | Già processati: 0
+      </p>
+    </div>
+  </footer>
+
+  <!-- ========== CONFIG MODAL ========== -->
+  <div id="config-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 animate-scale-in">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-gray-900">⚙️ Configurazione</h2>
+        <button onclick="closeConfigModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="space-y-4">
+        <!-- Airtable API Key -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Airtable API Key *</label>
+          <input type="password" id="config-api-key" placeholder="patXXXXXXXXXXXXXX..."
+                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          <p class="mt-1 text-xs text-gray-500">
+            Ottieni da: <a href="https://airtable.com/create/tokens" target="_blank" class="text-blue-600 hover:underline">airtable.com/create/tokens</a>
+          </p>
+        </div>
+        
+        <!-- Webhook URL -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Webhook URL</label>
+          <input type="url" id="config-webhook" 
+                 value="https://n8n.srv1087885.hstgr.cloud/webhook/vinted-worn-create"
+                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          <p class="mt-1 text-xs text-gray-500">Endpoint n8n W-WORN Orchestrator</p>
+        </div>
+      </div>
+      
+      <div class="mt-6 flex gap-3">
+        <button onclick="closeConfigModal()" 
+                class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+          Annulla
+        </button>
+        <button onclick="saveConfig()" 
+                class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+          Salva e Ricarica
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== HELP MODAL ========== -->
+  <div id="help-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 animate-scale-in max-h-[80vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-gray-900">❓ Guida</h2>
+        <button onclick="closeHelpModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="space-y-4 text-sm text-gray-600">
+        <div>
+          <h3 class="font-semibold text-gray-900 mb-1">Come funziona</h3>
+          <p>Questa webapp seleziona items per generare foto "worn style" via AI per Vinted.</p>
+        </div>
+        
+        <div>
+          <h3 class="font-semibold text-gray-900 mb-1">Eleggibilità</h3>
+          <p>Un item è eleggibile se ha:</p>
+          <ul class="list-disc ml-5 mt-1 space-y-1">
+            <li>Foto AI Front e Back generate</li>
+            <li>Gender specificato</li>
+            <li>Non già processato per Worn</li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="font-semibold text-gray-900 mb-1">Pose disponibili</h3>
+          <ol class="list-decimal ml-5 mt-1 space-y-1">
+            <li>Mirror selfie frontale</li>
+            <li>Mirror selfie angolato</li>
+            <li>Candid vista retro</li>
+            <li>Candid profilo laterale</li>
+            <li>Detail close-up</li>
+          </ol>
+        </div>
+        
+        <div>
+          <h3 class="font-semibold text-gray-900 mb-1">Limiti</h3>
+          <p>Massimo 50 items per batch.</p>
+        </div>
+      </div>
+      
+      <div class="mt-6">
+        <button onclick="closeHelpModal()" 
+                class="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+          Chiudi
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SUCCESS MODAL ========== -->
+  <div id="success-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-scale-in">
+      <div class="text-center">
+        <!-- Success icon -->
+        <div class="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+          <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        
+        <h3 class="text-xl font-bold text-gray-900">Batch Creato!</h3>
+        
+        <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+          <p class="text-sm text-gray-500">Batch ID</p>
+          <code class="text-sm font-mono text-gray-900" id="modal-batch-id">—</code>
+        </div>
+        
+        <div class="mt-3 flex justify-center gap-6 text-sm">
+          <div>
+            <span class="text-gray-500">Items:</span>
+            <span class="font-bold text-gray-900" id="modal-items-count">0</span>
+          </div>
+          <div>
+            <span class="text-gray-500">Jobs:</span>
+            <span class="font-bold text-gray-900" id="modal-jobs-count">0</span>
+          </div>
+        </div>
+        
+        <div class="mt-6 flex flex-col gap-2">
+          <button onclick="openReviewUrl()" 
+                  class="w-full px-4 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
+            Apri Review →
+          </button>
+          <button onclick="closeSuccessModal(); resetSelection(); loadItems();" 
+                  class="w-full px-4 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors">
+            Nuova Selezione
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== TOAST CONTAINER ========== -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
+
+  <!-- ========== JAVASCRIPT ========== -->
+  <script>
+    // ============================================
+    // CONFIGURAZIONE
+    // ============================================
+    const CONFIG = {
+      // Airtable
+      AIRTABLE_BASE_ID: 'apptD8GSxN3vhhivI',
+      AIRTABLE_TABLE_ID: 'tblddAcLcQAyk050u',
+      
+      // n8n Webhook
+      DEFAULT_WEBHOOK_URL: 'https://n8n.srv1087885.hstgr.cloud/webhook/vinted-worn-create',
+      
+      // Limiti
+      MAX_ITEMS_PER_BATCH: 50,
+      MIN_ITEMS_PER_BATCH: 1
+    };
+
+    const STORAGE_KEYS = {
+      API_KEY: 'vinted_selector_api_key',
+      WEBHOOK_URL: 'vinted_selector_webhook'
+    };
+
+    // Campi Airtable CORRETTI (verificati da schema)
+    const INVENTORY_FIELDS = [
+      'SKU',
+      'Brand_TXT',           // Mirror field
+      'Category_TXT',        // Mirror field  
+      'Sub-Category_TXT',    // Mirror field (con trattino!)
+      'gender',              // Single Select
+      'Tag Size',            // Text
+      'Colors_TXT',          // Mirror field
+      'Condizione',          // Single Select
+      'AI_Front_Image_Link', // URL
+      'AI_Back_Image_Link',  // URL
+      'rawID_FRONT',         // Long Text - FileID
+      'rawID_BACK',          // Long Text - FileID
+      'RAW_FolderID',        // Rollup
+      '€ Iniziale',          // Number
+      'Listing_Title',       // Text
+      'Vinted_Description',  // Long Text
+      'Product_Status'       // Per verificare se SOLD
+      // NOTA: Vinted_Worn_Status e Vinted_Eligible NON esistono ancora!
+    ];
+
+    // ============================================
+    // STATO APPLICAZIONE
+    // ============================================
+    let allItems = [];
+    let filteredItems = [];
+    let selectedItems = new Set();
+    let isLoading = false;
+    let currentBatchResponse = null;
+
+    // ============================================
+    // UTILITY FUNCTIONS
+    // ============================================
+    function getApiKey() {
+      return localStorage.getItem(STORAGE_KEYS.API_KEY) || '';
+    }
+
+    function getWebhookUrl() {
+      return localStorage.getItem(STORAGE_KEYS.WEBHOOK_URL) || CONFIG.DEFAULT_WEBHOOK_URL;
+    }
+
+    function needsConfig() {
+      return !getApiKey();
+    }
+
+    function generateRequestId() {
+      const timestamp = Date.now();
+      const random = Math.random().toString(36).substring(2, 8);
+      return `req_${timestamp}_${random}`;
+    }
+
+    /**
+     * ELEGGIBILITÀ CLIENT-SIDE
+     * Dato che i campi Vinted_Worn_Status e Vinted_Eligible NON esistono in Airtable,
+     * implementiamo la logica di eleggibilità lato client.
+     */
+    function isEligible(record) {
+      const f = record.fields || record;
+      
+      // Deve avere foto AI generate
+      const hasAiFront = f['AI_Front_Image_Link'] && f['AI_Front_Image_Link'].trim() !== '';
+      const hasAiBack = f['AI_Back_Image_Link'] && f['AI_Back_Image_Link'].trim() !== '';
+      
+      // Deve avere gender
+      const hasGender = f['gender'] && f['gender'].trim() !== '';
+      
+      // Non deve essere già venduto
+      const productStatus = f['Product_Status'] || '';
+      const isNotSold = !['SOLD', 'ARCHIVED', 'RETURNED'].includes(productStatus);
+      
+      return hasAiFront && hasAiBack && hasGender && isNotSold;
+    }
+
+    function debounce(fn, delay) {
+      let timer;
+      return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), delay);
+      };
+    }
+
+    // ============================================
+    // AIRTABLE API
+    // ============================================
+    async function fetchWithRetry(url, options, maxRetries = 3) {
+      for (let i = 0; i < maxRetries; i++) {
+        try {
+          const response = await fetch(url, options);
+          
+          if (response.status === 429) {
+            const waitTime = 1000 * Math.pow(2, i);
+            console.warn(`Rate limited, waiting ${waitTime}ms...`);
+            await new Promise(r => setTimeout(r, waitTime));
+            continue;
+          }
+          
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+          }
+          
+          return await response.json();
+        } catch (error) {
+          if (i === maxRetries - 1) throw error;
+          await new Promise(r => setTimeout(r, 500));
+        }
+      }
+    }
+
+    async function fetchAllRecords() {
+      const records = [];
+      let offset = null;
+      
+      do {
+        const params = new URLSearchParams();
+        INVENTORY_FIELDS.forEach(f => params.append('fields[]', f));
+        // NON usiamo filterByFormula con campi inesistenti!
+        // Filtriamo client-side con isEligible()
+        params.append('pageSize', '100');
+        if (offset) params.append('offset', offset);
+        
+        const url = `https://api.airtable.com/v0/${CONFIG.AIRTABLE_BASE_ID}/${CONFIG.AIRTABLE_TABLE_ID}?${params}`;
+        
+        const data = await fetchWithRetry(url, {
+          headers: { 'Authorization': `Bearer ${getApiKey()}` }
+        });
+        
+        records.push(...data.records);
+        offset = data.offset || null;
+        
+      } while (offset);
+      
+      return records;
+    }
+
+    async function loadItems() {
+      if (needsConfig()) {
+        showConfigModal();
+        return;
+      }
+      
+      setLoading(true);
+      hideError();
+      
+      try {
+        const rawRecords = await fetchAllRecords();
+        
+        // Filtra solo gli eleggibili (client-side)
+        allItems = rawRecords.filter(isEligible);
+        filteredItems = [...allItems];
+        
+        populateFilterDropdowns();
+        renderItems();
+        updateCounters(rawRecords.length);
+        
+        if (allItems.length > 0) {
+          document.getElementById('actions-section').classList.remove('hidden');
+        }
+        
+      } catch (error) {
+        console.error('Load error:', error);
+        showError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // ============================================
+    // RENDERING
+    // ============================================
+    function renderItems() {
+      const grid = document.getElementById('items-grid');
+      
+      if (filteredItems.length === 0) {
+        grid.classList.add('hidden');
+        document.getElementById('empty-state').classList.remove('hidden');
+        document.getElementById('actions-section').classList.add('hidden');
+        return;
+      }
+      
+      document.getElementById('empty-state').classList.add('hidden');
+      grid.classList.remove('hidden');
+      document.getElementById('actions-section').classList.remove('hidden');
+      
+      grid.innerHTML = filteredItems.map(item => createItemCardHTML(item)).join('');
+      
+      // Ripristina selezione
+      selectedItems.forEach(id => {
+        const card = grid.querySelector(`[data-record-id="${id}"]`);
+        if (card) card.classList.add('selected');
+      });
+      
+      updateVisibleCounter();
+    }
+
+    function createItemCardHTML(item) {
+      const f = item.fields;
+      const imageUrl = f['AI_Front_Image_Link'] || '';
+      const placeholderSvg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23f3f4f6' width='100' height='100'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='%239ca3af' font-size='12'%3ENo Image%3C/text%3E%3C/svg%3E`;
+      
+      return `
+        <div class="item-card relative bg-white rounded-lg shadow-sm border-2 border-transparent transition-all duration-200 cursor-pointer overflow-hidden hover:shadow-md hover:border-blue-300"
+             data-record-id="${item.id}"
+             onclick="toggleSelection(this)">
+          
+          <!-- Checkbox -->
+          <div class="absolute top-2 right-2 z-10">
+            <div class="w-6 h-6 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center checkbox-indicator transition-colors">
+              <svg class="w-4 h-4 text-white check-icon opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+          </div>
+          
+          <!-- Image -->
+          <div class="aspect-square overflow-hidden bg-gray-100">
+            <img src="${imageUrl || placeholderSvg}" 
+                 alt="${f.SKU || 'Product'}"
+                 class="w-full h-full object-cover"
+                 loading="lazy"
+                 onerror="this.src='${placeholderSvg}'">
+          </div>
+          
+          <!-- Info -->
+          <div class="p-3 space-y-1">
+            <div class="font-mono text-xs text-gray-500 uppercase tracking-wide">${f.SKU || '—'}</div>
+            <div class="font-semibold text-sm text-gray-900 truncate">${f['Brand_TXT'] || '—'}</div>
+            <div class="text-xs text-gray-500 truncate">${f['Sub-Category_TXT'] || '—'}</div>
+            <div class="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
+              <span class="text-sm font-bold text-green-600">€ ${f['€ Iniziale'] || '—'}</span>
+              <div class="flex items-center gap-1">
+                <span class="text-xs px-2 py-0.5 bg-gray-100 rounded text-gray-600">${f['Tag Size'] || '—'}</span>
+                <span class="text-xs px-2 py-0.5 bg-blue-100 rounded text-blue-600">${f['gender'] || '—'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ============================================
+    // SELEZIONE
+    // ============================================
+    function toggleSelection(cardElement) {
+      const recordId = cardElement.dataset.recordId;
+      
+      if (selectedItems.has(recordId)) {
+        selectedItems.delete(recordId);
+        cardElement.classList.remove('selected');
+      } else {
+        if (selectedItems.size >= CONFIG.MAX_ITEMS_PER_BATCH) {
+          showToast(`Massimo ${CONFIG.MAX_ITEMS_PER_BATCH} items per batch`, 'warning');
+          return;
+        }
+        selectedItems.add(recordId);
+        cardElement.classList.add('selected');
+      }
+      
+      updateSelectionCounter();
+      updateSubmitButton();
+    }
+
+    function selectAll() {
+      const visibleCards = document.querySelectorAll('.item-card');
+      const toSelect = Math.min(visibleCards.length, CONFIG.MAX_ITEMS_PER_BATCH);
+      
+      clearSelection();
+      
+      for (let i = 0; i < toSelect; i++) {
+        const card = visibleCards[i];
+        selectedItems.add(card.dataset.recordId);
+        card.classList.add('selected');
+      }
+      
+      updateSelectionCounter();
+      updateSubmitButton();
+      
+      if (visibleCards.length > CONFIG.MAX_ITEMS_PER_BATCH) {
+        showToast(`Selezionati i primi ${CONFIG.MAX_ITEMS_PER_BATCH} items (limite massimo)`, 'info');
+      }
+    }
+
+    function clearSelection() {
+      document.querySelectorAll('.item-card.selected').forEach(card => {
+        card.classList.remove('selected');
+      });
+      selectedItems.clear();
+      updateSelectionCounter();
+      updateSubmitButton();
+    }
+
+    function resetSelection() {
+      clearSelection();
+    }
+
+    // ============================================
+    // FILTRI
+    // ============================================
+    function applyFilters() {
+      const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+      const categoryFilter = document.getElementById('category-filter').value;
+      const genderFilter = document.getElementById('gender-filter').value;
+      const sizeFilter = document.getElementById('size-filter').value;
+      
+      filteredItems = allItems.filter(item => {
+        const f = item.fields;
+        
+        // Search
+        if (searchTerm) {
+          const sku = (f.SKU || '').toLowerCase();
+          const brand = (f['Brand_TXT'] || '').toLowerCase();
+          if (!sku.includes(searchTerm) && !brand.includes(searchTerm)) {
+            return false;
+          }
+        }
+        
+        // Category
+        if (categoryFilter && f['Category_TXT'] !== categoryFilter) {
+          return false;
+        }
+        
+        // Gender
+        if (genderFilter && f['gender'] !== genderFilter) {
+          return false;
+        }
+        
+        // Size
+        if (sizeFilter && f['Tag Size'] !== sizeFilter) {
+          return false;
+        }
+        
+        return true;
+      });
+      
+      renderItems();
+    }
+
+    function resetFilters() {
+      document.getElementById('search-input').value = '';
+      document.getElementById('category-filter').value = '';
+      document.getElementById('gender-filter').value = '';
+      document.getElementById('size-filter').value = '';
+      
+      filteredItems = [...allItems];
+      renderItems();
+    }
+
+    function populateFilterDropdowns() {
+      const categories = [...new Set(allItems.map(i => i.fields['Category_TXT']).filter(Boolean))].sort();
+      const genders = [...new Set(allItems.map(i => i.fields['gender']).filter(Boolean))].sort();
+      const sizes = [...new Set(allItems.map(i => i.fields['Tag Size']).filter(Boolean))].sort();
+      
+      populateSelect('category-filter', categories, 'Categoria');
+      populateSelect('gender-filter', genders, 'Gender');
+      populateSelect('size-filter', sizes, 'Taglia');
+    }
+
+    function populateSelect(id, options, placeholder) {
+      const select = document.getElementById(id);
+      const current = select.value;
+      select.innerHTML = `<option value="">${placeholder}</option>`;
+      options.forEach(opt => {
+        select.innerHTML += `<option value="${opt}">${opt}</option>`;
+      });
+      select.value = current;
+    }
+
+    // ============================================
+    // INVIO BATCH
+    // ============================================
+    async function submitBatch() {
+      // Validazione
+      if (selectedItems.size < CONFIG.MIN_ITEMS_PER_BATCH) {
+        showToast('Seleziona almeno 1 item', 'error');
+        return;
+      }
+      
+      const selectedPoses = getSelectedPoses();
+      if (selectedPoses.length === 0) {
+        showToast('Seleziona almeno 1 posa', 'error');
+        return;
+      }
+      
+      setSubmitLoading(true);
+      
+      try {
+        const payload = {
+          request_id: generateRequestId(),
+          items: Array.from(selectedItems),
+          config: {
+            model_selection: document.getElementById('model-select').value,
+            poses: selectedPoses,
+            quality_threshold: 'standard'
+          },
+          created_by: 'webapp_operator',
+          timestamp: new Date().toISOString()
+        };
+        
+        console.log('Sending batch:', payload);
+        
+        const response = await fetch(getWebhookUrl(), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok || !data.success) {
+          throw new Error(data.error?.message || data.message || 'Errore webhook');
+        }
+        
+        currentBatchResponse = data;
+        showSuccessModal(data);
+        
+      } catch (error) {
+        console.error('Submit error:', error);
+        showToast(`Errore: ${error.message}`, 'error');
+      } finally {
+        setSubmitLoading(false);
+      }
+    }
+
+    function getSelectedPoses() {
+      const poses = [];
+      for (let i = 1; i <= 5; i++) {
+        if (document.getElementById(`pose-${i}`).checked) {
+          poses.push(i);
+        }
+      }
+      return poses;
+    }
+
+    // ============================================
+    // UI STATE MANAGEMENT
+    // ============================================
+    function setLoading(loading) {
+      isLoading = loading;
+      document.getElementById('loading-state').classList.toggle('hidden', !loading);
+      document.getElementById('items-grid').classList.toggle('hidden', loading);
+      if (loading) {
+        document.getElementById('empty-state').classList.add('hidden');
+        document.getElementById('actions-section').classList.add('hidden');
+      }
+    }
+
+    function setSubmitLoading(loading) {
+      const btn = document.getElementById('submit-btn');
+      const btnText = document.getElementById('submit-btn-text');
+      btn.disabled = loading;
+      
+      if (loading) {
+        btnText.innerHTML = '<span class="animate-spin inline-block">⏳</span> Invio in corso...';
+      } else {
+        updateSubmitButton();
+      }
+    }
+
+    function showError(message) {
+      document.getElementById('error-message').textContent = message;
+      document.getElementById('error-state').classList.remove('hidden');
+      document.getElementById('items-grid').classList.add('hidden');
+      document.getElementById('empty-state').classList.add('hidden');
+    }
+
+    function hideError() {
+      document.getElementById('error-state').classList.add('hidden');
+    }
+
+    function updateSelectionCounter() {
+      document.getElementById('selection-counter').textContent = 
+        `Selezionati: ${selectedItems.size} / ${CONFIG.MAX_ITEMS_PER_BATCH} max`;
+    }
+
+    function updateVisibleCounter() {
+      document.getElementById('visible-counter').textContent = `Visibili: ${filteredItems.length}`;
+    }
+
+    function updateCounters(totalRaw) {
+      const eligible = allItems.length;
+      const processed = totalRaw - eligible;
+      
+      document.getElementById('footer-stats').textContent = 
+        `Items totali: ${totalRaw} | Eleggibili: ${eligible} | Non eleggibili: ${processed}`;
+    }
+
+    function updateSubmitButton() {
+      const btn = document.getElementById('submit-btn');
+      const btnText = document.getElementById('submit-btn-text');
+      const count = selectedItems.size;
+      const poses = getSelectedPoses().length;
+      const totalPhotos = count * poses;
+      
+      btn.disabled = count === 0 || poses === 0;
+      
+      if (count > 0 && poses > 0) {
+        btnText.textContent = `GENERA FOTO WORN (${count} items, ${totalPhotos} foto)`;
+      } else {
+        btnText.textContent = 'GENERA FOTO WORN';
+      }
+    }
+
+    // ============================================
+    // TOAST NOTIFICATIONS
+    // ============================================
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      const colors = {
+        error: 'bg-red-500',
+        warning: 'bg-yellow-500',
+        success: 'bg-green-500',
+        info: 'bg-blue-500'
+      };
+      
+      toast.className = `px-4 py-2 rounded-lg text-white text-sm shadow-lg animate-slide-up ${colors[type] || colors.info}`;
+      toast.textContent = message;
+      
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // ============================================
+    // MODALS
+    // ============================================
+    function showConfigModal() {
+      document.getElementById('config-modal').classList.remove('hidden');
+      document.getElementById('config-api-key').value = getApiKey();
+      document.getElementById('config-webhook').value = getWebhookUrl();
+    }
+
+    function closeConfigModal() {
+      document.getElementById('config-modal').classList.add('hidden');
+    }
+
+    function saveConfig() {
+      const apiKey = document.getElementById('config-api-key').value.trim();
+      const webhook = document.getElementById('config-webhook').value.trim();
+      
+      if (!apiKey) {
+        showToast('API Key è obbligatoria', 'error');
+        return;
+      }
+      
+      localStorage.setItem(STORAGE_KEYS.API_KEY, apiKey);
+      localStorage.setItem(STORAGE_KEYS.WEBHOOK_URL, webhook || CONFIG.DEFAULT_WEBHOOK_URL);
+      
+      closeConfigModal();
+      showToast('Configurazione salvata', 'success');
+      loadItems();
+    }
+
+    function showHelpModal() {
+      document.getElementById('help-modal').classList.remove('hidden');
+    }
+
+    function closeHelpModal() {
+      document.getElementById('help-modal').classList.add('hidden');
+    }
+
+    function showSuccessModal(data) {
+      document.getElementById('modal-batch-id').textContent = data.batch_id || '—';
+      document.getElementById('modal-items-count').textContent = selectedItems.size;
+      document.getElementById('modal-jobs-count').textContent = data.jobs_created || (selectedItems.size * getSelectedPoses().length);
+      document.getElementById('success-modal').classList.remove('hidden');
+    }
+
+    function closeSuccessModal() {
+      document.getElementById('success-modal').classList.add('hidden');
+    }
+
+    function openReviewUrl() {
+      if (currentBatchResponse?.review_url) {
+        window.open(currentBatchResponse.review_url, '_blank');
+      } else {
+        showToast('URL review non disponibile', 'warning');
+      }
+    }
+
+    // ============================================
+    // INITIALIZATION
+    // ============================================
+    document.addEventListener('DOMContentLoaded', () => {
+      // Event listeners per filtri
+      document.getElementById('search-input').addEventListener('input', debounce(applyFilters, 300));
+      document.getElementById('category-filter').addEventListener('change', applyFilters);
+      document.getElementById('gender-filter').addEventListener('change', applyFilters);
+      document.getElementById('size-filter').addEventListener('change', applyFilters);
+      
+      // Event listeners per pose
+      for (let i = 1; i <= 5; i++) {
+        document.getElementById(`pose-${i}`).addEventListener('change', updateSubmitButton);
+      }
+      
+      // Model select
+      document.getElementById('model-select').addEventListener('change', updateSubmitButton);
+      
+      // Inizializzazione
+      if (needsConfig()) {
+        showConfigModal();
+        setLoading(false);
+        document.getElementById('loading-state').classList.add('hidden');
+      } else {
+        loadItems();
+      }
+    });
+  </script>
+
+</body>
+</html>
